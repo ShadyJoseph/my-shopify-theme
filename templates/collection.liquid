@@ -1,0 +1,118 @@
+{% paginate collection.products by 4 %}
+  <h1 class="collection-title">{{ collection.title }}</h1>
+  <select id="sort-select" class="sort-select">
+    <option value="title-asc">Sort by Title (A-Z)</option>
+    <option value="title-desc">Sort by Title (Z-A)</option>
+    <option value="price-asc">Sort by Price (Low to High)</option>
+    <option value="price-desc">Sort by Price (High to Low)</option>
+  </select>
+
+  <div class="product-list">
+    {% for product in collection.products %}
+      {% render 'product-item', product: product %}
+    {% endfor %}
+  </div>
+
+  {% if paginate.pages > 1 %}
+    <nav class="pagination">
+      {% if paginate.previous %}
+        <a href="{{ paginate.previous.url }}" class="prev">&laquo; Previous</a>
+      {% endif %}
+
+      {% for page in paginate.parts %}
+        {% if page.is_link %}
+          <a href="{{ page.url }}" class="page{% if page.current %} current{% endif %}">{{ page.title }}</a>
+        {% else %}
+          <span class="page current">{{ page.title }}</span>
+        {% endif %}
+      {% endfor %}
+
+      {% if paginate.next %}
+        <a href="{{ paginate.next.url }}" class="next">Next &raquo;</a>
+      {% endif %}
+    </nav>
+  {% endif %}
+{% endpaginate %}
+
+<!-- Sorting Script -->
+<script>
+  document.getElementById('sort-select').addEventListener('change', function () {
+    var option = this.value;
+    var urlParams = new URLSearchParams(window.location.search);
+    urlParams.set('sort_by', option);
+    window.location.search = urlParams.toString();
+  });
+
+  window.onload = function () {
+    var urlParams = new URLSearchParams(window.location.search);
+    var sortBy = urlParams.get('sort_by');
+    if (sortBy) {
+      document.getElementById('sort-select').value = sortBy;
+    }
+  };
+</script>
+
+<!-- Boolean Filter Form -->
+<form class="boolean-filter-form">
+  {% for filter in collection.filters %}
+    {% if filter.type == 'boolean' %}
+      <details class="filter-details">
+        <summary class="filter-summary">
+          <div class="filter-summary-content">
+            <span class="filter-label">{{ filter.label }}</span>
+            {% if filter.active_values.size > 0 %}
+              <span class="filter-count">({{ filter.active_values.size }})</span>
+            {% endif %}
+          </div>
+        </summary>
+        <div class="filter-options">
+          <div class="selected-options">
+            <p>{{ filter.active_values.size }} selected</p>
+            {% if filter.active_values.size > 0 %}
+              <p><a href="{{ filter.url_to_remove }}" class="reset-link">Reset</a></p>
+            {% endif %}
+          </div>
+          <ul class="filter-values">
+            <li>
+              <label for="Filter-{{ filter.param_name }}-true" class="filter-value-label">
+                <input
+                  type="checkbox"
+                  name="{{ filter.param_name }}"
+                  value="{{ filter.true_value.value }}"
+                  id="Filter-{{ filter.param_name }}-true"
+                  {% if filter.true_value.active %}
+                    checked
+                  {% endif %}
+                  {% if filter.true_value.count == 0 and not filter.true_value.active %}
+                    disabled
+                  {% endif %}
+                >
+                {{ filter.true_value.label }}
+              </label>
+            </li>
+            <li>
+              <label for="Filter-{{ filter.param_name }}-false" class="filter-value-label">
+                <input
+                  type="checkbox"
+                  name="{{ filter.param_name }}"
+                  value="{{ filter.false_value.value }}"
+                  id="Filter-{{ filter.param_name }}-false"
+                  {% if filter.false_value.active %}
+                    checked
+                  {% endif %}
+                  {% if filter.false_value.count == 0 and not filter.false_value.active %}
+                    disabled
+                  {% endif %}
+                >
+                {{ filter.false_value.label }}
+              </label>
+            </li>
+          </ul>
+          <div class="apply-button">
+            <input type="submit" value="Apply" class="apply-submit">
+          </div>
+        </div>
+      </details>
+    {% endif %}
+  {% endfor %}
+</form>

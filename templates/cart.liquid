@@ -1,0 +1,122 @@
+{% if cart.items.size == 0 %}
+    <div class="cart__empty-message">
+        <p class="cart__empty-text">Your cart is empty.</p>
+        <a href="/collections/all" class="cart__continue-shopping-btn">Continue Shopping</a>
+    </div>
+{% else %}
+    <div class="cart__container">
+        <h1 class="cart__title">Shopping Cart</h1>
+        <form id="cart-form" action="/cart" method="post" class="cart__form">
+            <div class="cart__items">
+                {% for item in cart.items %}
+                    <div class="cart__item" data-key="{{ item.key }}" data-price="{{ item.price }}">
+                        <img
+                            src="{{ item.image.src | image_url }}"
+                            alt="{{ item.title }}"
+                            class="cart__item-image"
+                            width="150"
+                            height="150"
+                        >
+                        <div class="cart__item-details">
+                            <h2 class="cart__item-title">{{ item.title }}</h2>
+                            <p class="cart__item-price">{{ item.final_line_price | money }}</p>
+                            <div class="cart__item-quantity">
+                                <label for="quantity_{{ item.key }}" class="cart__quantity-label">Quantity:</label>
+                                <div class="cart__quantity-controls">
+                                    <button type="button" class="cart__quantity-decrease-btn" data-key="{{ item.key }}">-</button>
+                                    <input
+                                        type="number"
+                                        id="quantity_{{ item.key }}"
+                                        name="updates[{{ item.key }}]"
+                                        value="{{ item.quantity }}"
+                                        min="1"
+                                        class="cart__quantity-input"
+                                        readonly
+                                    >
+                                    <button type="button" class="cart__quantity-increase-btn" data-key="{{ item.key }}">+</button>
+                                </div>
+                            </div>
+                            <p class="cart__item-options">{{ item.variant_title }}</p>
+                            <a href="#" class="cart__remove-btn" data-key="{{ item.key }}">Remove</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="cart__summary">
+                <h2 class="cart__summary-title">Cart Summary</h2>
+                <p class="cart__summary-items">
+                    Total Items: <span id="total-items" class="cart__total-items">{{ cart.item_count }}</span>
+                </p>
+                <p class="cart__summary-price">
+                    Total Price: <span id="total-price" class="cart__total-price">{{ cart.total_price | money }}</span>
+                </p>
+                <button type="submit" name="update" class="cart__update-btn">Update Cart</button>
+                <a href="/checkout" class="cart__checkout-btn">Checkout</a>
+            </div>
+        </form>
+        <div class="cart__continue-shopping">
+            <a href="/collections/all" class="cart__continue-shopping-btn">Continue Shopping</a>
+        </div>
+    </div>
+{% endif %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const formatMoney = amount => numeral(amount / 100).format('$0,0.00');
+
+        const updateCartSummary = cart => {
+            document.getElementById('total-items').innerText = cart.item_count;
+            document.getElementById('total-price').innerText = formatMoney(cart.total_price);
+        };
+
+        const handleQuantityChange = (key, newQuantity) => {
+            const cartItem = document.querySelector(`.cart__item[data-key="${key}"]`);
+            const pricePerItem = parseInt(cartItem.dataset.price);
+            const newLinePrice = pricePerItem * newQuantity;
+
+            cartItem.querySelector('.cart__item-price').innerText = formatMoney(newLinePrice);
+
+            const totalPrice = Array.from(document.querySelectorAll('.cart__item')).reduce((sum, item) => {
+                const itemQuantity = parseInt(item.querySelector('.cart__quantity-input').value);
+                const itemPrice = parseInt(item.dataset.price) * itemQuantity;
+                return sum + itemPrice;
+            }, 0);
+
+            document.getElementById('total-price').innerText = formatMoney(totalPrice);
+
+            const updates = {};
+            updates[key] = newQuantity;
+
+            axios.post('/cart/update.js', { updates })
+                .then(response => updateCartSummary(response.data))
+                .catch(error => console.error('Error:', error));
+        };
+
+        document.querySelector('.cart__items').addEventListener('click', event => {
+            const target = event.target;
+            if (target.classList.contains('cart__quantity-increase-btn')) {
+                const key = target.dataset.key;
+                const quantityInput = document.getElementById(`quantity_${key}`);
+                const newQuantity = parseInt(quantityInput.value) + 1;
+                quantityInput.value = newQuantity;
+                handleQuantityChange(key, newQuantity);
+            } else if (target.classList.contains('cart__quantity-decrease-btn')) {
+                const key = target.dataset.key;
+                const quantityInput = document.getElementById(`quantity_${key}`);
+                let newQuantity = parseInt(quantityInput.value) - 1;
+                newQuantity = Math.max(newQuantity, 1); // Ensure quantity doesn't go below 1
+                quantityInput.value = newQuantity;
+                handleQuantityChange(key, newQuantity);
+            } else if (target.classList.contains('cart__remove-btn')) {
+                event.preventDefault();
+                const key = target.dataset.key;
+                axios.post('/cart/change.js', { id: key, quantity: 0 })
+                    .then(response => {
+                        document.querySelector(`.cart__item[data-key="${key}"]`).remove();
+                        updateCartSummary(response.data);
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+        });
+    });
+</script>

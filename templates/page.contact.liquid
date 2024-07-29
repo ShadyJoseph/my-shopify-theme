@@ -1,0 +1,41 @@
+<h1 class="page-title">{{ page.title }}</h1>
+<div class="page-content">
+  {{ page.content }}
+</div>
+{% form 'contact', class: 'contact-form' %}
+  {{ form.errors | default_errors }}
+
+  <div class="form-group">
+    <label for="first-name" class="form-label">First name</label>
+    <input type="text" name="contact[first_name]" id="first-name" class="form-input" />
+  </div>
+
+  <div class="form-group">
+    <label for="last-name" class="form-label">Last name</label>
+    <input type="text" name="contact[last_name]" id="last-name" class="form-input" />
+  </div>
+
+  <div class="form-group">
+    <label for="phone" class="form-label">Phone</label>
+    <input type="tel" name="contact[phone]" id="phone" class="form-input" />
+  </div>
+
+  <div class="form-group">
+    <label for="email" class="form-label">Email</label>
+    <input type="email" name="contact[email]" id="email" class="form-input" />
+  </div>
+
+  <div class="form-group">
+    <label for="order-number" class="form-label">Order number</label>
+    <input type="text" name="contact[order_number]" id="order-number" class="form-input" />
+  </div>
+
+  <div class="form-group">
+    <label for="message" class="form-label">Message</label>
+    <textarea name="contact[body]" id="message" class="form-textarea"></textarea>
+  </div>
+
+  <div class="form-group submit">
+    <input type="submit" value="Create" class="submit-btn" />
+  </div>
+{% endform %}

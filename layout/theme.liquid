@@ -1,0 +1,31 @@
+<!doctype html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Shop</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/numeral.js/2.0.6/numeral.min.js" defer></script>
+    {{ content_for_header }}
+    <link rel="stylesheet" href="{{ 'style.scss.css' | asset_url }}">
+  
+  </head>
+  <body style="
+    background-color: {{ settings.bg }};
+    color: {{ settings.text_color }};
+  ">
+    <header>
+      {% section 'header' %}
+    </header>
+    <main>
+      {{ content_for_layout }}
+    </main>
+    <footer>
+      {% section 'footer' %}
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/url-parse@1.5.10/dist/url-parse.min.js" defer></script>
+    <script src="{{ 'cart.js' | asset_url }}" async></script>
+    <script src="{{ 'scripts.js' | asset_url }}" async></script>
+  </body>
+  </html>
+  

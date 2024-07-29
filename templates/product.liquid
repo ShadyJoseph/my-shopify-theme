@@ -1,0 +1,87 @@
+<div class="container">
+  <div class="product-images">
+    <img id="product-image" src="{{ product.featured_image | image_url }}" alt="{{ product.title }}" width="300" height="300" class="product-image featured-image">
+  </div>
+  <h1 class="product-title">{{ product.title }}</h1>
+  <p class="product-description">{{ product.description }}</p>
+  <div>
+    <p class="product-compare">{{ product.selected_or_first_available_variant.compare_at_price | money }}</p>
+    <p class="product-price">{{ product.selected_or_first_available_variant.price | money }}</p>
+  </div>
+
+  {% form 'product', product %}
+  <input id="product-id" type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+  {% if product.variants.size > 1 %}
+  <div class="product-options">
+    {% for option in product.options_with_values %}
+    <fieldset>
+      <legend>{{ option.name }}</legend>
+      {% for value in option.values %}
+      <div class="option-value">
+        <input {% if option.selected_value == value %}checked {% endif %} type="radio" name="option[{{ option.name }}]" value="{{ value }}" id="{{ option.name | handleize }}-{{ value | handleize }}">
+        <label for="{{ option.name | handleize }}-{{ value | handleize }}">{{ value }}</label>
+      </div>
+      {% endfor %}
+    </fieldset>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="product-quantity">
+    <label for="quantity">Quantity</label>
+    <input id="quantity" name="quantity" type="number" value="1" min="1" class="product-quantity-input">
+  </div>
+
+  <button class="product-btn {% unless product.selected_or_first_available_variant.available %}disabled{% endunless %}">
+    {% if product.selected_or_first_available_variant.available %}
+    {{ 'General.add_to_cart' | t }}
+    {% else %}
+    OUT OF STOCK
+    {% endif %}
+  </button>
+  <button type="submit" name="return_to" value="/checkout" class="product-btn checkout-btn">Checkout</button>
+
+  {% endform %}
+</div>
+
+<script>
+  var product = {{ product | json }};
+  var options = document.querySelectorAll('.product-options input[type="radio"]');
+  var productImage = document.getElementById('product-image');
+  var productIdInput = document.getElementById('product-id');
+  var quantityInput = document.getElementById('quantity');
+  var priceElement = document.querySelector('.product-price');
+  var compareAtPriceElement = document.querySelector('.product-compare');
+
+  options.forEach(function (radio) {
+    radio.addEventListener('change', function () {
+      var selectedOptions = [];
+      options.forEach(function (radio) {
+        if (radio.checked) {
+          selectedOptions.push(radio.value);
+        }
+      });
+
+      var matchedVariant = product.variants.find(function (variant) {
+        return selectedOptions.every(function (option) {
+          return variant.options.indexOf(option) !== -1;
+        });
+      });
+
+      if (matchedVariant) {
+        productIdInput.value = matchedVariant.id;
+        var url = new URL(window.location.href);
+        url.searchParams.set('variant', matchedVariant.id);
+        window.history.replaceState(null, null, url.toString());
+        priceElement.textContent = Shopify.formatMoney(matchedVariant.price, Shopify.money_format);
+        compareAtPriceElement.textContent = matchedVariant.compare_at_price ? Shopify.formatMoney(matchedVariant.compare_at_price, Shopify.money_format) : '';
+      }
+    });
+  });
+
+  quantityInput.addEventListener('input', function () {
+    if (isNaN(quantityInput.value) || quantityInput.value < 1) {
+      quantityInput.value = 1;
+    }
+  });
+</script>

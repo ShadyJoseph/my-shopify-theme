@@ -1,0 +1,41 @@
+{% paginate search.results by 4 %}
+  <main class="search-results">
+    <h1>Search Results</h1>
+    <div class="results-container">
+      <!-- Search results will be displayed here -->
+      {% for result in search.results %}
+        <div class="result-item">
+          <div class="product-details">
+            <h2>{{ result.title }}</h2>
+            <p>{{ result.description }}</p>
+            <span>{{ result.price | money }}</span>
+            <a href="{{ result.url }}">View Product</a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- Pagination controls -->
+    <div class="pagination">
+      {% if paginate.pages > 1 %}
+        <nav class="pagination-links">
+          {% if paginate.previous %}
+            <a href="{{ paginate.previous.url }}" class="prev">Previous</a>
+          {% endif %}
+
+          {% for part in paginate.parts %}
+            {% if part.is_link %}
+              <a href="{{ part.url }}">{{ part.title }}</a>
+            {% else %}
+              <span class="current">{{ part.title }}</span>
+            {% endif %}
+          {% endfor %}
+
+          {% if paginate.next %}
+            <a href="{{ paginate.next.url }}" class="next">Next</a>
+          {% endif %}
+        </nav>
+      {% endif %}
+    </div>
+  </main>
+{% endpaginate %}

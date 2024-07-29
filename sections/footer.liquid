@@ -1,0 +1,55 @@
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-top">
+        <div class="social-links">
+          <h2>Follow Us</h2>
+          <ul class="social-list">
+            <li>
+              <a href="https://www.youtube.com/" title="YouTube">
+                <span class="fab fa-youtube"></span>
+                <span class="icon-fallback-text">YouTube</span>
+              </a>
+            </li>
+            <li>
+              <a href="https://www.instagram.com/" title="Instagram">
+                <span class="fab fa-instagram"></span>
+                <span class="icon-fallback-text">Instagram</span>
+              </a>
+            </li>
+            <li>
+              <a href="https://www.facebook.com/" title="Facebook">
+                <span class="fab fa-facebook"></span>
+                <span class="icon-fallback-text">Facebook</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+        <div class="payment-methods">
+          <h3>Accepted Payment Methods</h3>
+          <ul class="payment-icons">
+            <li><span class="fab fa-cc-visa"></span></li>
+            <li><span class="fab fa-cc-mastercard"></span></li>
+            <li><span class="fab fa-cc-amex"></span></li>
+            <li><span class="fab fa-cc-paypal"></span></li>
+          </ul>
+        </div>
+        <div class="quick-links">
+          <h3>Quick Links</h3>
+          <ul class="footer-links">
+            {% for link in linklists['footer'].links %}
+              <li><a href="{{ link.url }}" class="footer-link">{{ link.title }}</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div class="copyright">
+          <p>&copy; {{ 'now' | date: "%Y" }}, {{ shop.name | link_to: '/' }}. All rights reserved.</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+  
